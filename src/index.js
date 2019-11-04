@@ -10,10 +10,10 @@ app.get('/', function (req, res) {
 })
 const port = process.env.PORT || 3000
 app.use(bodyParser.urlencoded({
-    extended: true
+    extended: false
 }));
 
-app.post('/users', (req, res) => {
+app.post('/user', (req, res) => {
     const user = new User(req.body)
     user.save().then(() => {
         res.send(user);
@@ -22,7 +22,51 @@ app.post('/users', (req, res) => {
         res.status(400).send(err)
     })
 })
+app.get('/users', (req, res) => {
+    User.find({}).then(users => {
+            res.send(users);
+        })
+        .catch((err) => {
+            res.status(500).send(err)
+        })
+})
+app.get('/tasks', (req, res) => {
+    Task.find({}).then(tasks => {
+            res.send(tasks);
+        })
+        .catch((err) => {
+            res.status(500).send(err)
+        })
+})
+app.get('/users/:id', (req, res) => {
+    const _id = req.params.id;
 
+    User.findById(_id).then(user => {
+            if (user === null) {
+                res.status(400).send("not found")
+            } else {
+                res.send(user);
+
+            }
+        })
+        .catch((err) => {
+            res.status(500).send(err)
+        })
+})
+app.get('/tasks/:id', (req, res) => {
+    const _id = req.params.id;
+    Task.findById(_id).then(task => {
+            if (task === null) {
+                return res.status(400).send("not found")
+            } else {
+                res.send(task);
+
+            }
+        })
+        .catch((err) => {
+            res.status(500).send(err)
+        })
+})
 app.post('/tasks', (req, res) => {
     const task = new Task(req.body)
     task.save().then(() => {
