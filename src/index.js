@@ -67,6 +67,22 @@ app.get('/tasks/:id', (req, res) => {
             res.status(500).send(err)
         })
 })
+app.delete('/tasks/delete/:id', (req, res) => {
+    const _id = req.params.id;
+    Task.findByIdAndRemove(_id).then(task => {
+            if (task === null) {
+                return res.status(400).send("not found")
+            } else {
+                return Task.countDocuments({
+                    completed: false
+                })
+
+            }
+        }).then(count => console.log(count))
+        .catch((err) => {
+            res.status(500).send(err)
+        })
+})
 app.post('/tasks', (req, res) => {
     const task = new Task(req.body)
     task.save().then(() => {
@@ -75,5 +91,25 @@ app.post('/tasks', (req, res) => {
     }).catch((err) => {
         res.status(400).send(err)
     })
+})
+const updateAndCount = async (_id, completed) => {
+    const updatedTask = await Task.findByIdAndUpdate(_id, {
+        completed
+    });
+    const count = await Task.countDocuments({
+        completed
+    });
+    return count
+}
+app.put('/tasks/update/:id/:completed', (req, res) => {
+    const _id = req.params.id,
+        _completed = req.params.completed;
+    updateAndCount(_id, _completed).then(count => {
+        if (count === null) {
+            return res.status(400).send("not found")
+        } else {
+            return res.send("count" + count)
+        }
+    }).catch(e => console.log(e))
 })
 app.listen(port, () => console.log(`server is up and running on port ${port}`))
